@@ -3,7 +3,6 @@ import React from "react";
 const Form = ({setInputText, todos, setTodos, inputText}) =>{
   //every time the input text is changed this will be executed
   const inputTextHandler = (e) =>{
-    console.log(e.target.value);
     setInputText(e.target.value);
   };
 
