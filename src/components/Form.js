@@ -1,15 +1,25 @@
 import React from "react";
 
-const Form = () =>{
+const Form = ({setInputText, todos, setTodos, inputText}) =>{
   //every time the input text is changed this will be executed
   const inputTextHandler = (e) =>{
-    console.log(e.target.value);
+    setInputText(e.target.value);
   };
+
+  const sumbitTodoHandler = (e) =>{
+    e.preventDefault();
+    setTodos([
+      ...todos,
+      { text: inputText, completed: false, id: Math.random()*1000 }
+    ])
+    setInputText("");
+  }
+
     return(
         <form>
       {/* line 11 is the input of the todo text */}
-      <input onChange={inputTextHandler} type="text" className="todo-input" />
-      <button className="todo-button" type="submit">
+      <input value={inputText} onChange={inputTextHandler} type="text" className="todo-input" />
+      <button onClick={sumbitTodoHandler} className="todo-button" type="submit">
         <i className="fas fa-plus-square"></i>
       </button>
       <div className="select">
