@@ -1,7 +1,6 @@
 name: upload my image to DockerHub
 
 on:
-  workflow_dispatch
   push:
     branches: [ main ]
 jobs:
