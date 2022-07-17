@@ -4,8 +4,8 @@ vpc_name: my-vpc
 network: 10.10.0.0/16
 subnet_cidr: 10.10.0.0/24
 env_name: todoenv
-aws_region: eu-central-1
-subnet: eu-central-1a
+aws_region: us-east-1
+subnet: us-east-1a
 
 keypair: amit
 
