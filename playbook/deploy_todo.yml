@@ -110,7 +110,7 @@
   hosts: app
   user: centos
   become: True
-  gather_facts: True
+  gather_facts: False
   vars_files:
     - ../group_vars/env
   tasks:
@@ -118,6 +118,9 @@
       yum: 
         name: 
           - epel-release
+          - git
+          - yum-utils
+          - python3-pip
         state: present
 
     - name: Add signing key
