@@ -1,0 +1,14 @@
+server_name: todo
+env: prod
+vpc_name: my-vpc
+network: 10.10.0.0/16
+subnet_cidr: 10.10.0.0/24
+env_name: todoenv
+aws_region: eu-central-1
+subnet: eu-central-1a
+
+keypair: amit
+
+aws_centos_ami: ami-08b6d44b4f6f7b279
+Server_type: t2.micro
+server_volume_size: 20

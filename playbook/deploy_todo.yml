@@ -1,0 +1,177 @@
+- name: Create a todo server
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+    - group_vars/env
+
+  tasks:
+  - name: create VPC
+    ec2_vpc_net:
+      name: "{{ vpc_name }}"
+      cidr_block: "{{ network }}"
+      region: "{{ aws_region }}"
+      state: present
+      dns_hostnames: yes
+      dns_support: yes
+      multi_ok: no
+      tags:
+        Name: "{{ vpc_name }}"
+    register: vpc
+
+  - name: associate subnet to the VPC
+    ec2_vpc_subnet:
+      state: present
+      vpc_id: "{{ vpc.vpc.id }}"
+      region: "{{ aws_region }}"
+      cidr: "{{ subnet_cidr }}"
+      map_public: yes
+      az: "{{ subnet }}"
+      resource_tags:
+        Name: "{{ vpc_name }}"
+      wait: yes
+    register: subnet
+
+  - name: create IGW
+    ec2_vpc_igw:
+      vpc_id: "{{ vpc.vpc.id }}"
+      region: "{{ aws_region }}"
+      state: present
+      tags:
+        Name: "{{ vpc_name }}_igw"
+    register: igw
+
+  - name: Route table for public Subnet
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      region: "{{ aws_region }}"
+      state: present
+      subnets:
+        - "{{ subnet.subnet.id }}"
+      routes:
+        - dest: 0.0.0.0/0
+          gateway_id: "{{ igw.gateway_id  }}"
+      tags:
+        Name: "{{ vpc_name }}_public_rt"
+
+  - name: Create security group
+    ec2_group:
+      name: "{{ vpc_name }} VPC SG"
+      description: "{{ vpc_name }} VPC SG"
+      vpc_id: "{{ vpc.vpc.id }}"
+      region: "{{ aws_region }}"
+      state: present
+      rules:
+        - proto: tcp
+          ports:
+          - 80
+          - 22
+          cidr_ip: 0.0.0.0/0
+    register: sg
+
+  - name: Create server
+    ec2:
+      image: "{{ aws_centos_ami }}"
+      wait: yes
+      instance_type: "{{ Server_type }}"
+      region: "{{ aws_region }}"
+      group_id: "{{ sg.group_id }}"
+      vpc_subnet_id: "{{ subnet.subnet.id }}"
+      key_name: "{{ keypair }}"
+      volumes:
+        - device_name: /dev/sda1
+          volume_type: gp3
+          volume_size: "{{ server_volume_size }}"
+          delete_on_termination: true
+      count_tag:
+        Name: "{{ server_name }}"
+        Environment: "{{ env }}"
+      exact_count: 1
+      instance_tags:
+        Name: "{{ server_name }}"
+        Environment: "{{ env }}"
+      wait_timeout: 300
+      assign_public_ip: yes
+    register: server_ec2
+  
+  - debug: var=server_ec2.tagged_instances[0].public_ip
+
+  - name: Add server public IP to application host group
+    add_host: hostname={{ server_ec2.tagged_instances[0].public_ip }} groups=app
+
+  - name: Wait for SSH to start using external IP
+    wait_for:
+      host: "{{ server_ec2.tagged_instances[0].public_ip }}"
+      port: 22
+      timeout: 300
+
+##############################################################
+- name: Setup app server
+  hosts: app
+  user: centos
+  become: True
+  gather_facts: True
+  vars_files:
+    - group_vars/env
+  tasks:
+    - name: install base packages
+      yum: 
+        name: 
+          - epel-release
+        state: present
+
+    - name: Add signing key
+      ansible.builtin.rpm_key:
+        key: "https://download.docker.com/linux/centos/gpg"
+        state: present
+
+    - name: Add repository into repo.d list
+      yum_repository:
+        name: docker
+        description: docker repository
+        baseurl: "https://download.docker.com/linux/centos/$releasever/$basearch/stable"
+        enabled: true
+        gpgcheck: true
+        gpgkey: "https://download.docker.com/linux/centos/gpg"
+
+    - name: Install Docker
+      yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: latest
+        update_cache: true
+
+    - name: Start Docker
+      ansible.builtin.service:
+        name: "docker"
+        enabled: true
+        state: started
+
+    - name: Copy permissions file
+      copy:
+        src: ~/.ssh/id_rsa
+        dest: ~/.ssh/id_rsa
+        mode: '0600'
+
+    - name: Clone todo_project repository
+      git:
+        repo: git@github.com:AmitSel/To-Do-Project.git
+        dest: /opt/Project
+        version: master
+        key_file: ~/.ssh/id_rsa
+        accept_hostkey: True
+        force: True
+
+    - name: Build docker image and push to DockerHub
+      shell: "{{ item }}"
+      args:
+        chdir: /opt/Project
+      with_items:
+      - docker login -u {{ docker_user }} -p {{ docker_token }}
+      - docker build . --tag {{ docker_user }}/todo_project:latest
+      - docker push {{ docker_user }}/todo_project:latest
+
+    - name: start todo docker
+      shell: "docker run -d -p 80:3000 -t --restart always --name todo amitdocker95/todo_project"
