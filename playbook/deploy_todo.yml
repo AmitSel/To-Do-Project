@@ -3,7 +3,7 @@
   connection: local
   gather_facts: False
   vars_files:
-    - group_vars/env
+    - ../group_vars/env
 
   tasks:
   - name: create VPC
