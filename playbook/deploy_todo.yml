@@ -110,7 +110,7 @@
   hosts: app
   user: centos
   become: True
-  gather_facts: True
+  gather_facts: False
   vars_files:
     - ../group_vars/env
   tasks:
