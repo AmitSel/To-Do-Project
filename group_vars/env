@@ -7,7 +7,7 @@ env_name: todoenv
 aws_region: us-east-1
 subnet: us-east-1a
 
-keypair: amit
+keypair: devops-key
 
 aws_centos_ami: ami-00e87074e52e6c9f9
 Server_type: t2.micro

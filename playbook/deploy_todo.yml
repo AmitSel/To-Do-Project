@@ -113,6 +113,8 @@
   gather_facts: False
   vars_files:
     - ../group_vars/env
+    - ../group_vars/docker.env
+
   tasks:
     - name: install base packages
       yum: 
@@ -162,7 +164,7 @@
       git:
         repo: git@github.com:AmitSel/To-Do-Project.git
         dest: /opt/Project
-        version: master
+        version: main
         key_file: ~/.ssh/id_rsa
         accept_hostkey: True
         force: True
