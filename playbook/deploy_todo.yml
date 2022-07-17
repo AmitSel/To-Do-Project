@@ -112,7 +112,7 @@
   become: True
   gather_facts: True
   vars_files:
-    - group_vars/env
+    - ../group_vars/env
   tasks:
     - name: install base packages
       yum: 
