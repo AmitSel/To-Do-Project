@@ -9,6 +9,6 @@ subnet: us-east-1a
 
 keypair: amit
 
-aws_centos_ami: ami-08b6d44b4f6f7b279
+aws_centos_ami: ami-00e87074e52e6c9f9
 Server_type: t2.micro
 server_volume_size: 20
