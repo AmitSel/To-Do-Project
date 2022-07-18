@@ -10,7 +10,7 @@ body {
   min-height: 100vh;
 }
 header {
-  font-size: 2rem;
+  font-size: 3rem;
 }
 
 header,
@@ -118,7 +118,7 @@ select {
   color: #4759ff;
   font-family: "Poppins", sans-serif;
   cursor: pointer;
-  width: 12rem;
+  width: 14rem;
 }
 /* Arrow */
 .select::after {
