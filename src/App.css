@@ -10,7 +10,7 @@ body {
   min-height: 100vh;
 }
 header {
-  font-size: 2rem;
+  font-size: 3rem;
 }
 
 header,
@@ -115,10 +115,10 @@ select {
   overflow: hidden;
 }
 select {
-  color: #ff6f47;
+  color: #4759ff;
   font-family: "Poppins", sans-serif;
   cursor: pointer;
-  width: 12rem;
+  width: 14rem;
 }
 /* Arrow */
 .select::after {
@@ -127,7 +127,7 @@ select {
   top: 0;
   right: 0;
   padding: 1rem;
-  background: #ff6f47;
+  background: #fa6d46;
   cursor: pointer;
   pointer-events: none;
 }
