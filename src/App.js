@@ -57,7 +57,7 @@ function App() {
   return (
     <div className="App">
       <header>
-        <h1>Amit And Muhammad's heeeyyyyyy Project</h1>
+        <h1>Amit And Muhammad's todo Project</h1>
       </header>
       {/* HTML Element */}
       <Form
